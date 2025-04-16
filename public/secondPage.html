@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="sr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tab Sistem</title>
+    <link rel="stylesheet" href="secondPage.css">
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="sidebar">
+            <h3>Available files</h3>
+            <ul id="file-list">
+                <!-- Ovde cemo preko JS-a da ubacimo listu fajlova -->
+            </ul>
+        </div>
+        <div class="kvadrat">
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('download')">Download File</div>
+                <div class="tab" onclick="showTab('upload')">Upload File</div>
+            </div>
+            <div class="content">
+                <div id="download" class="tab-content active">
+                    <p>Downloading files</p>
+                    <p id="selected-file-name">No file has been chosen.</p>
+                    <div class="button-group">
+                        <button disabled id="showFileButton">Preview file</button>
+                        <button disabled id="downlaodFileButton">Download file</button>
+                    </div>
+                </div>
+                <div id="upload" class="tab-content">
+                    <p>Uploading files</p>
+                    <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+                        <input type="file" id="fileInput" name="file" />
+                        <br />
+                        <img id="previewImage" style="max-width: 300px; display: none;" alt="Preview">
+                        <br />
+                        <button disabled type="button" id="previewButton">Preview</button>
+                        <br />
+                        <button disabled type="submit" id="submitButton">Submit File</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
