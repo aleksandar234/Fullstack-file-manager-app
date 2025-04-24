@@ -205,3 +205,23 @@ document.getElementById("uploadForm").addEventListener("submit", (e) => {
         console.error("Error per sending file:", err);
     })
 })
+
+
+function logout() {
+    fetch('/logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => {
+        if(response.ok) {
+            window.location.href = '/loginPage.html';
+        } else {
+            alert("Error logging in");
+        }
+    })
+    .catch(error => {
+        console.error("Error: ", error);
+    })
+}

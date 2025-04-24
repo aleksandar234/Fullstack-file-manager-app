@@ -3,9 +3,35 @@ const app = express();
 const path = require("path");
 const mongoose = require("mongoose");
 const multer = require("multer")
+const User = require("./public/models/User");
+const {requireAdmin} = require("./public/middlewares/auth")
+const session = require("express-session");
 
+app.use(session({
+    secret: "tajna_lozinka",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {secure: false}
+}))
+
+
+// Ovo omogucava da Express parsira podatke iz HTML forme (POST body)
+app.use(express.urlencoded({extended:true}));
 
 app.use(express.static(path.join(__dirname, "public")));
+
+app.use((req, res, next) => {
+    res.setHeader("Content-Security-Policy",
+        "default-src 'self';" + // dozvoli sve sa loclhost:3000
+        "style-src 'self' 'unsafe-inline'; " + // dozvoli CSS
+        "script-src 'self'; " + // dozvoli JS
+        "font-src 'self';" // dozvoli fontove sa localhost
+    );
+    next();
+})
+
+
+const bcrypt = require("bcrypt");
 
 mongoose.connect("mongodb://127.0.0.1:27017/Dzoni", {
     useNewUrlParser: true,
@@ -28,6 +54,27 @@ mongoose.connection.on("connected", () => {
 const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
 
+
+
+async function createAdmin() {
+    const hashPassword = await bcrypt.hash("admin", 10);
+
+    const admin = new User({
+        email: "admin@gmail.com",
+        password: hashPassword,
+        role: "ADMIN"        
+    })
+
+    await admin.save();
+    console.log("Admin has been added to DB");
+    mongoose.disconnect();
+}
+
+// createAdmin();
+
+
+
+
 const fileSchema = new mongoose.Schema({
     fileName: String,
     fileType: String,
@@ -36,6 +83,95 @@ const fileSchema = new mongoose.Schema({
 
 const File = mongoose.model("File", fileSchema);
 
+
+// Za autorizaciju kada korisnik ode na direktan pristup secondPage.html
+app.get("/secondPage.html", requireAdmin, (req, res) => {
+    res.sendFile(__dirname + "/public/secondPage.html");
+})
+
+// Ovo mi je deo za registraciju 
+app.get("/register", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "views/register.html"));
+})
+
+// Za redirektovanje rute sa login stranice
+app.post("/login", async(req, res) => {
+    const {email, password} = req.body;
+    
+    try{
+        const user = await User.findOne({email});
+        if(!user) {
+            return res.status(401).send("Invalid credentials")
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+    
+        if(!isMatch) {
+            return res.status(401).send("Invalid credentials");
+        }
+
+
+        // Ovde cuvamo korisnika u sesiji
+        req.session.user = {
+            email: user.email,
+            role: user.role
+        };
+
+        res.redirect("/secondPage.html");
+    
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server error");
+    }
+
+})
+
+// Ovo je za logout
+app.post("/logout", (req, res) => {
+    req.session.destroy((err) => {
+        if(err) {
+            return res.status(500).send("Could not log out");
+        }
+        res.redirect("/loginPage.html");
+    })
+})
+
+// POST za registraciju accounta
+app.post("/register", async(req, res) => {
+    console.log("OVde sam")
+    const {email, password, conformationPassword} = req.body;
+
+    if(!email || !password || !conformationPassword) {
+        return res.status(400).send("All fields are required!");
+    }
+
+    if(password !== conformationPassword) {
+        return res.status(400).send("Passwords do not match!");
+    }
+
+    try {
+        const existingUser = await User.findOne({email});
+        if(existingUser) {
+            return res.status(400).send("Email already exists in database");
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+
+        const newUser = new User({
+            email: email,
+            password: hashedPassword,
+            role: "USER"
+        });
+
+        await newUser.save();
+        res.redirect("/loginPage.html");
+    } catch(err) {
+        console.error("Registration error: ", err);
+        res.status(500).send("Server error");
+    }
+
+})
 
 //POST ruta za upload fajla
 app.post("/upload", upload.single("file"), (req, res) => {
