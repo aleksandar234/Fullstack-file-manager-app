@@ -10,7 +10,7 @@
 <body>
     <div class="main-container">
         <div class="logout">
-            <button id="logoutButton" onclick="logout()">Logout</button>
+            <button id="logoutButton">Logout</button>
         </div> 
         <div class="sidebar">
             <h3>Available files</h3>
@@ -20,8 +20,8 @@
         </div>
         <div class="kvadrat">
             <div class="tabs">
-                <div class="tab active" onclick="showTab('download')">Download File</div>
-                <div class="tab" onclick="showTab('upload')">Upload File</div>
+                <div class="tab active" id="downloadTab">Download File</div>
+                <div class="tab" id="uploadTab">Upload File</div>
             </div> 
             <div class="content">
                 <div id="download" class="tab-content active">

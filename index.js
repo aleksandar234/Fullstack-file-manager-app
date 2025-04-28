@@ -9,7 +9,7 @@ const session = require("express-session");
 
 app.use(session({
     secret: "tajna_lozinka",
-    resave: false,
+    resave: true,
     saveUninitialized: true,
     cookie: {secure: false}
 }))
@@ -18,14 +18,28 @@ app.use(session({
 // Ovo omogucava da Express parsira podatke iz HTML forme (POST body)
 app.use(express.urlencoded({extended:true}));
 
+
+app.use((req, res, next) => {
+    if(req.url.endsWith(".html")) {
+        return res.status(404).send("Page not found");
+    }
+    next();
+})
+
+
 app.use(express.static(path.join(__dirname, "public")));
+
 
 app.use((req, res, next) => {
     res.setHeader("Content-Security-Policy",
         "default-src 'self';" + // dozvoli sve sa loclhost:3000
         "style-src 'self' 'unsafe-inline'; " + // dozvoli CSS
         "script-src 'self'; " + // dozvoli JS
-        "font-src 'self';" // dozvoli fontove sa localhost
+        "font-src 'self';" + // dozvoli fontove sa localhost
+        "img-src 'self' blob: data:;" + // dozvoljava slike
+        "object-src 'self' blob: data:;" + // dozvoljava pdf
+        "media-src 'self' blob:;" + // dozvoljava medijske fajlove
+        "frame-src 'self' blob: data:;"
     );
     next();
 })
@@ -85,7 +99,8 @@ const File = mongoose.model("File", fileSchema);
 
 
 // Za autorizaciju kada korisnik ode na direktan pristup secondPage.html
-app.get("/secondPage.html", requireAdmin, (req, res) => {
+app.get("/secondPage", requireAdmin, (req, res) => {
+    console.log("Poziva mi se ovo")
     res.sendFile(__dirname + "/public/secondPage.html");
 })
 
@@ -93,6 +108,10 @@ app.get("/secondPage.html", requireAdmin, (req, res) => {
 app.get("/register", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "views/register.html"));
 })
+
+app.get("/login", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "loginPage.html"));
+}) 
 
 // Za redirektovanje rute sa login stranice
 app.post("/login", async(req, res) => {
@@ -117,7 +136,9 @@ app.post("/login", async(req, res) => {
             role: user.role
         };
 
-        res.redirect("/secondPage.html");
+        console.log("Sesija je postavljena:", req.session.user);
+
+        res.redirect("/secondPage");
     
     } catch (err) {
         console.error(err);
@@ -126,13 +147,25 @@ app.post("/login", async(req, res) => {
 
 })
 
+// Ovo mi je mini ruta za dohvatanje sesija koje trenutno ulogovani korisnik ima
+app.get("/session", (req, res) => {
+    if(req.session.user) {
+        res.json({
+            email: req.session.user.email,
+            role: req.session.user.role
+        })
+    } else {
+        res.status(401).json({message: "Not authenticated"});
+    }
+})
+
 // Ovo je za logout
 app.post("/logout", (req, res) => {
     req.session.destroy((err) => {
         if(err) {
             return res.status(500).send("Could not log out");
         }
-        res.redirect("/loginPage.html");
+        res.redirect("/login");
     })
 })
 
@@ -165,7 +198,7 @@ app.post("/register", async(req, res) => {
         });
 
         await newUser.save();
-        res.redirect("/loginPage.html");
+        res.redirect("/login");
     } catch(err) {
         console.error("Registration error: ", err);
         res.status(500).send("Server error");

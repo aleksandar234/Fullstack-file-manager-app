@@ -103,9 +103,79 @@ document.getElementById("previewButton").addEventListener("click", function () {
     }
 })
 
+
+
 document.addEventListener("DOMContentLoaded", () => {
     showAllAvailableFiles();
 })
+
+document.addEventListener("DOMContentLoaded", function() {
+    const logoutButton = document.getElementById("logoutButton");
+    const downloadTab = document.getElementById("downloadTab");
+    const uploadTab = document.getElementById("uploadTab");
+
+    // Logout dugme
+    if (logoutButton) {
+        logoutButton.addEventListener("click", function() {
+            fetch("/logout", { method: "POST" })
+                .then(() => {
+                    window.location.href = "/login";
+                })
+                .catch(err => console.error("Logout failed:", err));
+        });
+    }
+
+    // Tab za Download
+    if (downloadTab) {
+        downloadTab.addEventListener("click", function() {
+            showTab('download');
+        });
+    }
+
+    // Tab za Upload
+    if (uploadTab) {
+        uploadTab.addEventListener("click", function() {
+            showTab('upload');
+        });
+    }
+});
+
+
+// U DOMContentLoaded, cim se stranica ucita moram da saznam rolu user-a da bih znao sta da mu omogucim a sta ne
+document.addEventListener("DOMContentLoaded", () => {
+    const downloadButton = document.getElementById("downlaodFileButton");
+    const fileType = "application/pdf";
+
+    fetchUserRoleAndAdjustUI(downloadButton, fileType);
+})
+
+
+async function fetchUserRoleAndAdjustUI(downloadButton, fileType) {
+    try {
+
+        const response = await fetch("/session");
+        if(!response.ok) {
+            throw new Error("Not Authenticated");
+        }
+        const user = await response.json();
+
+        const userRole = user.role;
+
+        if(userRole === "ADMIN") {
+            downloadButton.disabled = false;
+        } else {
+            if (fileType === "application/pdf") {
+                downloadButton.disabled = true;
+            } else {
+                downloadButton.disabled = false;
+            }
+        }
+
+    } catch(err) {
+        console.error("Could not fetch user role: ", err);
+    }
+}
+
 
 // Dohvata mi sve fajlove u bazi podataka i prikazuje mi delu "Available files"
 function showAllAvailableFiles() {
@@ -137,6 +207,45 @@ function showAllAvailableFiles() {
         })
 }
 
+// Ovo je deo za download file-a sa servera na moj lokalni uredjaj (telefon, racunar)
+// Kratak opis ove funkcije:
+// Klik na dugme -> dohvatanje svih fajlova sa servera -> pronalazenje fajla koji je korisnik izabrao
+// -> Od bajtova napravim Blob (pravi fajl u memoriji) -> kreiram privremeni URL do tog fajla
+// -> napravim tag <a> i kliknem na njega (Browser preuzi fajl) -> ocistimo privremeni URL iz memorije
+document.getElementById("downlaodFileButton").addEventListener("click", () => {
+    const selectedFileName = document.getElementById("selected-file-name").textContent.replace("Choosen file: ", "");
+    console.log(selectedFileName);
+
+    fetch('http://localhost:3000/documents')
+        .then(response => response.json())
+        .then(files => {
+            const file = files.find(f => f.fileName === selectedFileName);
+
+            if(!file) {
+                alert("File not found");
+                return;
+            }
+
+            const arrayBuffer = new Uint8Array(file.fileData.data);
+            const blob = new Blob([arrayBuffer], {type: file.fileType});
+
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = file.fileName; // ovde postavljamo da kada kliknem download dugme, da se fajl isto zove kao i u bazi
+            // Ovaj deo smo stavili jer <a> mora da bude deo DOM-a inace u nekim browserima klik nece imati efekta
+            // ovim document.body.appendChild ja njega stavljam da on bude deo DOM-a i samim tim i klik na dugme je uspesan
+            document.body.appendChild(a); // ubacim a u DOM
+            a.click(); // simuliram klik na njega (browser pokrece download)
+            document.body.removeChild(a); // odmah ga brisem (cistim DOM)
+
+            URL.revokeObjectURL(downloadUrl); // Cisti memoriju
+        })
+        .catch(err => {
+            console.error("Error per getting file for download: ", err);
+        })
+})
+
 // Ovo je preview za Download deo
 document.getElementById("showFileButton").addEventListener("click", () => {
 
@@ -145,6 +254,7 @@ document.getElementById("showFileButton").addEventListener("click", () => {
         .then(files => {
             files.forEach(file => {
                 if (file.fileName === document.getElementById("showFileButton").textContent.replace("Preview: ", "")) {
+                    console.log(file.fileData);
                     const arrayBuffer = new Uint8Array(file.fileData.data);
                     const blob = new Blob([arrayBuffer], { type: file.fileType });
 
@@ -152,9 +262,9 @@ document.getElementById("showFileButton").addEventListener("click", () => {
                     const fileUrl = URL.createObjectURL(blob);
 
                     const newTab = window.open();
-
-                    if (newTab.document.body.children.length > 0) {
-                        newTab.document.body.innerHTML = ''; // Očisti postojeći sadržaj
+                    if (!newTab) {
+                        alert("Popup blokiran! Dozvoli popupe.");
+                        return;
                     }
 
                     console.log(newTab);
