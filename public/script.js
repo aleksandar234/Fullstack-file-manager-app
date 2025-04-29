@@ -32,6 +32,7 @@ document.getElementById("fileInput").addEventListener("change", function (e) {
     const previewButton = document.getElementById("previewButton");
     const submitButton = document.getElementById("submitButton");
     const selectedFileName = document.getElementById("selected-file-name");
+    // const downloadButton = document.getElementById("downlaodFileButton");
 
     if (file) {
         previewButton.disabled = false;
@@ -40,22 +41,22 @@ document.getElementById("fileInput").addEventListener("change", function (e) {
         const reader = new FileReader();
         selectedFileName.textContent = `Choosen file: ${file.fileName}`
 
-        // Ako je fajl slika, prikazacemo njen preview
-        // reader.onload = function (event) {
-        //     const previewImage = document.getElementById("previewImage");
-        //     previewImage.src = event.target.result; // prikazuje sliku kao preview
-        //     previewImage.style.display = "block";// prikazuje element
-        //     console.log("Ovde ja kao prikazujem sliku")
-        // }
+        // Ako fajl postoji, sto znaci da je korisnik kliknuo na neki fajl
+        // onda moram da dohvatim njegovu rolu i da pitam koja je rola
+        // na osnovu toga cu da mu dam da disable-uje download dugme ili ne
+
 
         reader.readAsDataURL(file);
 
         // Ako fajl nije slika onda prikazujemo samo ime fajla
         document.getElementById("previewImage").style.display = "none";
         previewButton.textContent = `Preview: ${file.name}`; // Prikazuje ime fajla
+
+
     } else {
         previewButton.disabled = true;
         submitButton.disabled = true;
+        // downloadButton.disabled = true;
     }
 
 })
@@ -109,14 +110,14 @@ document.addEventListener("DOMContentLoaded", () => {
     showAllAvailableFiles();
 })
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const logoutButton = document.getElementById("logoutButton");
     const downloadTab = document.getElementById("downloadTab");
     const uploadTab = document.getElementById("uploadTab");
 
     // Logout dugme
     if (logoutButton) {
-        logoutButton.addEventListener("click", function() {
+        logoutButton.addEventListener("click", function () {
             fetch("/logout", { method: "POST" })
                 .then(() => {
                     window.location.href = "/login";
@@ -127,54 +128,20 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Tab za Download
     if (downloadTab) {
-        downloadTab.addEventListener("click", function() {
+        downloadTab.addEventListener("click", function () {
             showTab('download');
         });
     }
 
     // Tab za Upload
     if (uploadTab) {
-        uploadTab.addEventListener("click", function() {
+        uploadTab.addEventListener("click", function () {
             showTab('upload');
         });
     }
 });
 
 
-// U DOMContentLoaded, cim se stranica ucita moram da saznam rolu user-a da bih znao sta da mu omogucim a sta ne
-document.addEventListener("DOMContentLoaded", () => {
-    const downloadButton = document.getElementById("downlaodFileButton");
-    const fileType = "application/pdf";
-
-    fetchUserRoleAndAdjustUI(downloadButton, fileType);
-})
-
-
-async function fetchUserRoleAndAdjustUI(downloadButton, fileType) {
-    try {
-
-        const response = await fetch("/session");
-        if(!response.ok) {
-            throw new Error("Not Authenticated");
-        }
-        const user = await response.json();
-
-        const userRole = user.role;
-
-        if(userRole === "ADMIN") {
-            downloadButton.disabled = false;
-        } else {
-            if (fileType === "application/pdf") {
-                downloadButton.disabled = true;
-            } else {
-                downloadButton.disabled = false;
-            }
-        }
-
-    } catch(err) {
-        console.error("Could not fetch user role: ", err);
-    }
-}
 
 
 // Dohvata mi sve fajlove u bazi podataka i prikazuje mi delu "Available files"
@@ -190,12 +157,56 @@ function showAllAvailableFiles() {
                 const fileElement = document.createElement("li");
                 fileElement.textContent = fileName;
                 const previewFileButton = document.getElementById("showFileButton")
-                fileElement.addEventListener("click", () => {
+                fileElement.addEventListener("click", async () => {
                     document.getElementById("selected-file-name").textContent = `Choosen file: ${fileName}`;
                     // Omogucivanje dugmica
-                    document.getElementById("showFileButton").disabled = false;
-                    document.getElementById("downlaodFileButton").disabled = false;
+                    const previewButton = document.getElementById("showFileButton");
+                    const downloadButton = document.getElementById("downlaodFileButton");
                     previewFileButton.textContent = `Preview: ${fileName}`;
+
+                    if (file) {
+                        previewButton.disabled = false;
+                        downloadButton.disabled = false;
+                        try {
+                            const response = await fetch("/session");
+                            if (!response.ok) {
+                                throw new Error("Not authenticated");
+                            }
+                            const user = await response.json();
+                            const role = user.role;
+
+                            // const fileType = file.type;
+                            const extension = fileName.split('.').pop().toLowerCase();
+
+                            let fileType = '';
+                            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension)) {
+                                fileType = 'image';
+                            } else if (extension === 'pdf') {
+                                fileType = 'application/pdf';
+                            } else {
+                                fileType = 'other';
+                            }
+                            // console.log("FT: ", fileType);
+                            // console.log("ROLE:", role);
+                            if (role === "ADMIN") {
+                                downloadButton.disabled = false;
+                            } else if (role === "USER") {
+                                if (fileType === "image") {
+                                    downloadButton.disabled = false;
+                                } else if (fileType === "application/pdf") {
+                                    downloadButton.disabled = true;
+                                } else {
+                                    downloadButton.disabled = true;
+                                }
+                            } else {
+                                downloadButton.disabled = true;
+                            }
+                        } catch (err) {
+                            console.error("Error fetching user role: ", err);
+                            downloadButton.disabled = true;
+                        }
+                    }
+
                 })
 
 
@@ -221,13 +232,13 @@ document.getElementById("downlaodFileButton").addEventListener("click", () => {
         .then(files => {
             const file = files.find(f => f.fileName === selectedFileName);
 
-            if(!file) {
+            if (!file) {
                 alert("File not found");
                 return;
             }
 
             const arrayBuffer = new Uint8Array(file.fileData.data);
-            const blob = new Blob([arrayBuffer], {type: file.fileType});
+            const blob = new Blob([arrayBuffer], { type: file.fileType });
 
             const downloadUrl = URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -303,17 +314,17 @@ document.getElementById("uploadForm").addEventListener("submit", (e) => {
         method: "POST",
         body: formData,
     })
-    .then(res => {
-        if(res.ok) {
-            alert("Fajl successfully uplaoded");
-            showAllAvailableFiles();
-        } else {
-            res.text().then(msg => alert("Error:" + msg));
-        }
-    })
-    .catch(err => {
-        console.error("Error per sending file:", err);
-    })
+        .then(res => {
+            if (res.ok) {
+                alert("Fajl successfully uplaoded");
+                showAllAvailableFiles();
+            } else {
+                res.text().then(msg => alert("Error:" + msg));
+            }
+        })
+        .catch(err => {
+            console.error("Error per sending file:", err);
+        })
 })
 
 
@@ -324,14 +335,14 @@ function logout() {
             'Content-Type': 'application/json',
         }
     })
-    .then(response => {
-        if(response.ok) {
-            window.location.href = '/loginPage.html';
-        } else {
-            alert("Error logging in");
-        }
-    })
-    .catch(error => {
-        console.error("Error: ", error);
-    })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/loginPage.html';
+            } else {
+                alert("Error logging in");
+            }
+        })
+        .catch(error => {
+            console.error("Error: ", error);
+        })
 }
