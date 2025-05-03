@@ -310,7 +310,7 @@ document.getElementById("uploadForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
 
-    fetch("http://localhost:3000/upload", {
+    fetch("https://fullstack-file-manager-app-production.up.railway.app/upload", {
         method: "POST",
         body: formData,
     })
