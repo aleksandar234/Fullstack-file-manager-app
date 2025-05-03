@@ -92,7 +92,7 @@ async function createAdmin() {
     mongoose.disconnect();
 }
 
-// createAdmin();
+createAdmin();
 
 
 
