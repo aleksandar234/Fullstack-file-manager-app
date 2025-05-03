@@ -47,21 +47,21 @@ app.use((req, res, next) => {
 
 const bcrypt = require("bcryptjs");
 
-mongoose.connect("mongodb://127.0.0.1:27017/Dzoni", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => {
-    console.log("Povezani sa bazom podataka")
-}).catch(err => {
-    console.error("Greska pri povezivanju sa bazom ", err);
-})
-
-// mongoose.connect("mongodb://mongo:IUsudpFUWZOTCehyrIwSSaKQLYobSqlW@maglev.proxy.rlwy.net:48145", {
+// mongoose.connect("mongodb://127.0.0.1:27017/Dzoni", {
 //     useNewUrlParser: true,
-//     useUnifiedTopology: true
+//     useUnifiedTopology: true,
+// }).then(() => {
+//     console.log("Povezani sa bazom podataka")
+// }).catch(err => {
+//     console.error("Greska pri povezivanju sa bazom ", err);
 // })
-// .then(() => console.log("Connected to MongoDB on Railway"))
-// .catch((err) => console.error("MongoDB connection error:", err));
+
+mongoose.connect("mongodb://mongo:IUsudpFUWZOTCehyrIwSSaKQLYobSqlW@maglev.proxy.rlwy.net:48145", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log("Connected to MongoDB on Railway"))
+.catch((err) => console.error("MongoDB connection error:", err));
 
 
 mongoose.connection.on('error', (err) => {
@@ -92,7 +92,7 @@ async function createAdmin() {
     mongoose.disconnect();
 }
 
-createAdmin();
+// createAdmin();
 
 
 
