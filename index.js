@@ -56,6 +56,14 @@ mongoose.connect("mongodb://127.0.0.1:27017/Dzoni", {
     console.error("Greska pri povezivanju sa bazom ", err);
 })
 
+// mongoose.connect("mongodb://mongo:IUsudpFUWZOTCehyrIwSSaKQLYobSqlW@maglev.proxy.rlwy.net:48145", {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true
+// })
+// .then(() => console.log("Connected to MongoDB on Railway"))
+// .catch((err) => console.error("MongoDB connection error:", err));
+
+
 mongoose.connection.on('error', (err) => {
     console.error("MongoDb konekcija nije uspela:", err);
 })
