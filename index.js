@@ -33,6 +33,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use((req, res, next) => {
     res.setHeader("Content-Security-Policy",
         "default-src 'self';" + // dozvoli sve sa loclhost:3000
+        "connect-src 'self' https://fullstack-file-manager-app-production.up.railway.app; " + // Dozvoljava API pozive 
         "style-src 'self' 'unsafe-inline'; " + // dozvoli CSS
         "script-src 'self'; " + // dozvoli JS
         "font-src 'self';" + // dozvoli fontove sa localhost
