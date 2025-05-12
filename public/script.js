@@ -116,9 +116,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const uploadTab = document.getElementById("uploadTab");
 
     // Logout dugme
+    // "logout"
     if (logoutButton) {
         logoutButton.addEventListener("click", function () {
-            fetch("/https://fullstack-file-manager-app-production.up.railway.app/logout", { method: "POST" })
+            fetch("https://fullstack-file-manager-app.onrender.com/logout", { method: "POST" })
                 .then(() => {
                     window.location.href = "/login";
                 })
@@ -145,8 +146,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 // Dohvata mi sve fajlove u bazi podataka i prikazuje mi delu "Available files"
+//"http://localhost:3000/documents"
 function showAllAvailableFiles() {
-    fetch('https://fullstack-file-manager-app-production.up.railway.app/documents')
+    fetch('https://fullstack-file-manager-app.onrender.com/documents')
         .then(response => response.json())
         .then(files => {
             const container = document.getElementById("file-list");
@@ -168,7 +170,8 @@ function showAllAvailableFiles() {
                         previewButton.disabled = false;
                         downloadButton.disabled = false;
                         try {
-                            const response = await fetch("https://fullstack-file-manager-app-production.up.railway.app/session");
+                            // /session
+                            const response = await fetch("https://fullstack-file-manager-app.onrender.com/session");
                             if (!response.ok) {
                                 throw new Error("Not authenticated");
                             }
@@ -227,7 +230,8 @@ document.getElementById("downlaodFileButton").addEventListener("click", () => {
     const selectedFileName = document.getElementById("selected-file-name").textContent.replace("Choosen file: ", "");
     console.log(selectedFileName);
 
-    fetch('https://fullstack-file-manager-app-production.up.railway.app/documents')
+    //http://localhost:3000/documents
+    fetch('https://fullstack-file-manager-app.onrender.com/documents')
         .then(response => response.json())
         .then(files => {
             const file = files.find(f => f.fileName === selectedFileName);
@@ -260,7 +264,8 @@ document.getElementById("downlaodFileButton").addEventListener("click", () => {
 // Ovo je preview za Download deo
 document.getElementById("showFileButton").addEventListener("click", () => {
 
-    fetch('https://fullstack-file-manager-app-production.up.railway.app/documents')
+    //http://localhost:3000/documents
+    fetch('https://fullstack-file-manager-app.onrender.com/documents')
         .then(response => response.json())
         .then(files => {
             files.forEach(file => {
@@ -312,7 +317,8 @@ document.getElementById("uploadForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
 
-    fetch("https://fullstack-file-manager-app-production.up.railway.app/upload", {
+    //http://localhost:3000/upload
+    fetch("https://fullstack-file-manager-app.onrender.com/upload", {
         method: "POST",
         body: formData,
     })
@@ -329,9 +335,9 @@ document.getElementById("uploadForm").addEventListener("submit", (e) => {
         })
 })
 
-
+"/logout"
 function logout() {
-    fetch('https://fullstack-file-manager-app-production.up.railway.app/logout', {
+    fetch('https://fullstack-file-manager-app.onrender.com/logout', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
