@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  db:
+    image: mongo:7
+    container_name: dzoni-db
+    restart: always
+    ports:
+      - "27018:27017"
+    volumes:
+      - dzoni_mongo_data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: dzoni-backend
+    restart: always
+    ports:
+      - "5001:5000"
+    environment:
+      MONGO_URI: mongodb://db:27017/Dzoni
+    depends_on:
+      - db
+    volumes:
+      - dzoni_uploads:/app/uploads
+
+  frontend:
+    build: ./frontend
+    container_name: dzoni-frontend
+    restart: always
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+
+volumes:
+  dzoni_mongo_data:
+  dzoni_uploads:
