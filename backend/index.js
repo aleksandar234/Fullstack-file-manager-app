@@ -7,9 +7,27 @@ const { requireAdmin } = require("./middlewares/auth");
 const session = require("express-session");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
+require('./db');
+
+// app.use(cors({
+//     origin: "http://localhost:5500",
+//     credentials: true
+// }));
+
+const allowedOrigins = [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    process.env.FRONTEND_URL
+].filter(Boolean);
 
 app.use(cors({
-    origin: "http://localhost:5500",
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("CORS nije dozvoljen za ovaj origin"));
+        }
+    },
     credentials: true
 }));
 
@@ -23,38 +41,58 @@ app.use(session({
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use((req, res, next) => {
-    res.setHeader(
-        "Content-Security-Policy",
-        "default-src 'self'; " +
-        "connect-src 'self' http://localhost:5500; " +
-        "style-src 'self' 'unsafe-inline'; " +
-        "script-src 'self' 'unsafe-inline'; " +
-        "font-src 'self'; " +
-        "img-src 'self' blob: data:; " +
-        "object-src 'self' blob: data:; " +
-        "media-src 'self' blob:; " +
-        "frame-src 'self' blob: data:;"
-    );
-    next();
-});
+// app.use((req, res, next) => {
+//     res.setHeader(
+//         "Content-Security-Policy",
+//         "default-src 'self'; " +
+//         "connect-src 'self' http://localhost:5500; " +
+//         "style-src 'self' 'unsafe-inline'; " +
+//         "script-src 'self' 'unsafe-inline'; " +
+//         "font-src 'self'; " +
+//         "img-src 'self' blob: data:; " +
+//         "object-src 'self' blob: data:; " +
+//         "media-src 'self' blob:; " +
+//         "frame-src 'self' blob: data:;"
+//     );
+//     next();
+// });
 
-mongoose.connect("mongodb://127.0.0.1:27017/Dzoni", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => {
-    console.log("Povezani sa bazom podataka");
-}).catch(err => {
-    console.error("Greska pri povezivanju sa bazom ", err);
-});
 
-mongoose.connection.on("error", (err) => {
-    console.error("MongoDb konekcija nije uspela:", err);
-});
+// app.use((req, res, next) => {
+//     res.setHeader(
+//         "Content-Security-Policy",
+//         "default-src 'self'; " +
+//         "connect-src 'self' http://localhost:3000 http://192.168.124.28:3000; " +
+//         "style-src 'self' 'unsafe-inline'; " +
+//         "script-src 'self' 'unsafe-inline'; " +
+//         "font-src 'self'; " +
+//         "img-src 'self' blob: data:; " +
+//         "object-src 'self' blob: data:; " +
+//         "media-src 'self' blob:; " +
+//         "frame-src 'self' blob: data:;"
+//     );
+//     next();
+// });
 
-mongoose.connection.on("connected", () => {
-    console.log("Mongo konekcija je uspesno uspostavljena");
-});
+
+
+
+// mongoose.connect("mongodb://127.0.0.1:27017/Dzoni", {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+// }).then(() => {
+//     console.log("Povezani sa bazom podataka");
+// }).catch(err => {
+//     console.error("Greska pri povezivanju sa bazom ", err);
+// });
+
+// mongoose.connection.on("error", (err) => {
+//     console.error("MongoDb konekcija nije uspela:", err);
+// });
+
+// mongoose.connection.on("connected", () => {
+//     console.log("Mongo konekcija je uspesno uspostavljena");
+// });
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -224,6 +262,8 @@ app.get("/stox", (req, res) => {
     res.send("Ovo je druga najbolja ruta na koju mozes da dodjes");
 });
 
-app.listen(3000, () => {
-    console.log("Server radi na portu http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server radi na portu ${PORT}`);
 });
