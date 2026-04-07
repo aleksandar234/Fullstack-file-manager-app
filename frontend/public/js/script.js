@@ -360,6 +360,10 @@
 //         })
 // }
 
+const API_BASE =
+    window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+        ? "http://localhost:3000"
+        : `http://${window.location.hostname}:3000`;
 
 function showTab(tab_id) {
     document.querySelectorAll(".tab-content").forEach((element) => element.classList.remove("active"));
@@ -378,7 +382,7 @@ function showTab(tab_id) {
 
 async function checkSession() {
     try {
-        const response = await fetch("http://localhost:3000/session", {
+        const response = await fetch(`${API_BASE}/session`, {
             method: "GET",
             credentials: "include"
         });
@@ -469,7 +473,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (logoutButton) {
         logoutButton.addEventListener("click", async function () {
             try {
-                const response = await fetch("http://localhost:3000/logout", {
+                const response = await fetch(`${API_BASE}/logout`, {
                     method: "POST",
                     credentials: "include"
                 });
@@ -502,7 +506,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 // Dohvata mi sve fajlove u bazi podataka i prikazuje mi delu "Available files"
 function showAllAvailableFiles() {
-    fetch("http://localhost:3000/documents", {
+    fetch(`${API_BASE}/documents`, {
         credentials: "include"
     })
         .then(async response => {
@@ -534,7 +538,7 @@ function showAllAvailableFiles() {
                         downloadButton.disabled = false;
 
                         try {
-                            const response = await fetch("http://localhost:3000/session", {
+                            const response = await fetch(`${API_BASE}/session`, {
                                 credentials: "include"
                             });
 
@@ -587,7 +591,7 @@ document.getElementById("downlaodFileButton").addEventListener("click", () => {
     const selectedFileName = document.getElementById("selected-file-name").textContent.replace("Choosen file: ", "");
     console.log(selectedFileName);
 
-    fetch("http://localhost:3000/documents", {
+    fetch(`${API_BASE}/documents`, {
         credentials: "include"
     })
         .then(async response => {
@@ -625,7 +629,7 @@ document.getElementById("downlaodFileButton").addEventListener("click", () => {
 
 // Preview za Download deo
 document.getElementById("showFileButton").addEventListener("click", () => {
-    fetch("http://localhost:3000/documents", {
+    fetch(`${API_BASE}/documents`, {
         credentials: "include"
     })
         .then(async response => {
@@ -678,7 +682,7 @@ document.getElementById("uploadForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
 
-    fetch("http://localhost:3000/upload", {
+    fetch(`${API_BASE}/upload`, {
         method: "POST",
         credentials: "include",
         body: formData,
