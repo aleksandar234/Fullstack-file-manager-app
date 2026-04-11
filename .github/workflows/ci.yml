@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - master
+      - cloud-si-separation
 
 jobs:
   build-and-push:
