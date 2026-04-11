@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   db:
-    image: mongo:7
+    image: mongo:6
     container_name: dzoni-db
     restart: always
     ports:
