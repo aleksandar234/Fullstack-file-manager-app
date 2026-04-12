@@ -13,11 +13,12 @@ jobs:
       - name: Deploy on VM via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.VM_HOST }}
+          host: 46.101.134.200
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
+          port: 22
           script: |
-            cd ~/aleksandarpruo/Fullstack-file-manager-app
+            cd /var/www/app
             docker compose pull
             docker compose up -d --remove-orphans
             docker image prune -f
