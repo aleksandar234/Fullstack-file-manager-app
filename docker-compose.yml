@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  db:
+    image: mongo:4.4
+    container_name: dzoni-db
+    restart: always
+    volumes:
+      - dzoni_mongo_data:/data/db
+
+  backend:
+    image: stox234/dzoni-backend:latest
+    container_name: dzoni-backend
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      MONGO_URI: mongodb://db:27017/Dzoni
+      FRONTEND_URL: http://46.101.134.200:5500
+      SESSION_SECRET: neka_jaka_tajna
+      BACKEND_URL: http://46.101.134.200:3001
+    depends_on:
+      - db
+    volumes:
+      - dzoni_uploads:/app/uploads
+
+  frontend:
+    image: stox234/dzoni-frontend:latest
+    container_name: dzoni-frontend
+    restart: always
+    ports:
+      - "5500:5500"
+    depends_on:
+      - backend
+
+volumes:
+  dzoni_mongo_data:
+  dzoni_uploads:

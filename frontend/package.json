@@ -1,0 +1,10 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "live-server --port=5500 --host=0.0.0.0 --open=views/index.html"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}
