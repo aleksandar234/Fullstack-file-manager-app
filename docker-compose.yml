@@ -5,8 +5,6 @@ services:
     image: mongo:4.4
     container_name: dzoni-db
     restart: always
-    ports:
-      - "27018:27017"
     volumes:
       - dzoni_mongo_data:/data/db
 
@@ -18,7 +16,9 @@ services:
       - "3001:3000"
     environment:
       MONGO_URI: mongodb://db:27017/Dzoni
-      FRONTEND_URL: http://192.168.124.28:5500
+      FRONTEND_URL: http://46.101.134.200:5500
+      SESSION_SECRET: neka_jaka_tajna
+      BACKEND_URL: http://46.101.134.200:3001
     depends_on:
       - db
     volumes:
