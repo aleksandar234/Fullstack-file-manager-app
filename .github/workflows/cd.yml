@@ -6,6 +6,8 @@ on:
       - CI - Build and Push Docker Images
     types:
       - completed
+    branches:
+      - cloud-si-separation
 
 jobs:
   deploy:
@@ -14,13 +16,14 @@ jobs:
 
     steps:
       - name: Deploy on VM via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1
         with:
           host: 46.101.134.200
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           port: 22
           script: |
+            set -e
             cd /var/www/app
             docker compose pull
             docker compose up -d --remove-orphans --force-recreate
