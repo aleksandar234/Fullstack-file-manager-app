@@ -35,4 +35,6 @@ services:
 
 volumes:
   dzoni_mongo_data:
+    name: dzoni_mongo_data
   dzoni_uploads:
+    name: dzoni_uploads
