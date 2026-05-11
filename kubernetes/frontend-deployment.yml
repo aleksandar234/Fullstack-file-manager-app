@@ -15,5 +15,6 @@ spec:
       containers:
         - name: frontend
           image: stox234/dzoni-frontend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 5500
