@@ -24,7 +24,11 @@ jobs:
           port: 22
           script: |
             set -e
+
             cd /aleksandar/app
-            docker compose pull
-            docker compose up -d --remove-orphans --force-recreate
+
+            git pull
+
+            kubectl apply -f kubernetes/
+
             docker image prune -f
