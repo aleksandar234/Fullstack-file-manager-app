@@ -27,7 +27,8 @@ jobs:
 
             cd /aleksandar/app
 
-            git pull
+            git fetch origin cloud-si-separation
+            git reset --hard origin/cloud-si-separation
 
             kubectl apply -f kubernetes/
 
