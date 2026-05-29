@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: backend
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: backend
@@ -15,6 +15,7 @@ spec:
       containers:
         - name: backend
           image: stox234/dzoni-backend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
           env:
