@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: stox234/dzoni-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MONGO_URI
+              value: mongodb://mongo-service:27017/Dzoni
+            - name: FRONTEND_URL
+              value: http://46.101.134.200:30550
+            - name: SESSION_SECRET
+              value: neka_jaka_tajna
+            - name: BACKEND_URL
+              value: http://46.101.134.200:30001

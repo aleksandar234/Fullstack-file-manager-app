@@ -14,6 +14,21 @@ require('./db');
 //     credentials: true
 // }));
 
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "OK",
+        service: "backend",
+        message: "Backend is running"
+    });
+});
+
+app.get("/instance", (req, res) => {
+    res.status(200).json({
+        pod: process.env.HOSTNAME || "local-machine",
+        message: "Request handeled by this backnd pod"
+    });
+});
+
 const allowedOrigins = [
     "http://localhost:5500",
     "http://127.0.0.1:5500",

@@ -10,7 +10,7 @@
 
 <body>
     <div class="login-box">
-        <h2>Log in Konacno</h2>
+        <h2>Log in promenu</h2>
 
         <form id="loginForm">
             <div class="input-group">
@@ -35,7 +35,7 @@
         const API_BASE =
         window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
             ? `http://${window.location.hostname}:3000`
-            : `http://${window.location.hostname}:3001`;
+            : `http://${window.location.hostname}:30001`;
         document.getElementById("loginForm").addEventListener("submit", async function (e) {
             e.preventDefault();
 

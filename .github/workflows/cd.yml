@@ -24,7 +24,18 @@ jobs:
           port: 22
           script: |
             set -e
+
             cd /aleksandar/app
-            docker compose pull
-            docker compose up -d --remove-orphans
+
+            git fetch origin cloud-si-separation
+            git reset --hard origin/cloud-si-separation
+
+            kubectl apply -f kubernetes/
+
+            kubectl rollout restart deployment/backend
+            kubectl rollout restart deployment/frontend
+
+            kubectl rollout status deployment/backend
+            kubectl rollout status deployment/frontend
+
             docker image prune -f
