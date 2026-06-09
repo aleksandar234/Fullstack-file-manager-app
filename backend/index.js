@@ -24,7 +24,7 @@ app.get("/health", (req, res) => {
 
 app.get("/instance", (req, res) => {
     res.status(200).json({
-        pod: process.env.HOSTNAME,
+        pod: process.env.HOSTNAME || "local-machine",
         message: "Request handeled by this backnd pod"
     });
 });
