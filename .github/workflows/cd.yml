@@ -32,11 +32,8 @@ jobs:
 
             kubectl apply -f kubernetes/
 
-            kubectl set image deployment/backend \
-              backend=stox234/dzoni-backend:${{ github.event.workflow_run.head_sha }}
-
-            kubectl set image deployment/frontend \
-              frontend=stox234/dzoni-frontend:${{ github.event.workflow_run.head_sha }}
+            kubectl rollout restart deployment/backend
+            kubectl rollout restart deployment/frontend
 
             kubectl rollout status deployment/backend
             kubectl rollout status deployment/frontend
